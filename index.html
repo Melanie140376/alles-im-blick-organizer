@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alles im Blick – dein Pferde-Organizer | Melanie Kluge Fotografie</title>
+<style>
+  /* Palette: #dfebdd (soft sage), #f7f7f5 (off-white), #4e5b53 (dark sage), #3a3a3a (ink) */
+  /* Alles läuft rein clientseitig im Browser: keine API, kein Server, keine laufenden Kosten. */
+  :root{
+    --dark:#4e5b53;
+    --dark-hover:#404b44;
+    --soft:#dfebdd;
+    --soft-strong:#cfe0cb;
+    --bg:#f7f7f5;
+    --card:#ffffff;
+    --ink:#3a3a3a;
+    --ink-soft:rgba(58,58,58,.62);
+    --line:rgba(78,91,83,.22);
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,system-ui,sans-serif;
+    color:var(--ink);
+    background:var(--bg);
+    line-height:1.5;
+  }
+  h1,h2,h3{font-family:Georgia,'Times New Roman',serif;}
+  a{color:var(--dark);}
+
+  /* HERO */
+  .hero{
+    background:linear-gradient(135deg,var(--soft) 0%, var(--bg) 100%);
+    padding:56px 24px 40px;
+    text-align:center;
+  }
+  .hero h1{
+    font-size:clamp(2rem,5vw,3.2rem);
+    letter-spacing:1px;
+    color:var(--dark);
+    margin:0 0 14px;
+    text-transform:uppercase;
+  }
+  .hero p{
+    max-width:640px;
+    margin:0 auto;
+    color:var(--ink);
+    font-size:1.05rem;
+  }
+  .hero .brand{
+    margin-top:22px;
+    font-size:.85rem;
+    letter-spacing:.5px;
+    color:var(--ink-soft);
+    text-transform:uppercase;
+  }
+
+  .intro{
+    max-width:760px;
+    margin:0 auto;
+    padding:34px 24px 8px;
+    color:var(--ink-soft);
+    font-size:1.02rem;
+  }
+  .intro strong{color:var(--ink);}
+
+  /* HORSE TABS */
+  .horse-bar{
+    position:sticky; top:0; z-index:50;
+    background:var(--card);
+    border-bottom:1px solid var(--line);
+    padding:10px 16px;
+    display:flex; align-items:center; gap:10px;
+    flex-wrap:wrap;
+  }
+  .horse-tabs{display:flex; gap:8px; flex-wrap:wrap; flex:1;}
+  .horse-tab{
+    display:flex; align-items:center; gap:6px;
+    background:var(--soft);
+    border:1px solid transparent;
+    border-radius:999px;
+    padding:4px 6px 4px 12px;
+  }
+  .horse-tab.active{
+    background:var(--dark);
+    color:#fff;
+  }
+  .horse-tab.active input{color:#fff;}
+  .horse-tab input{
+    border:none; background:transparent; font-size:.92rem; font-weight:600;
+    width:110px; font-family:inherit; color:var(--ink);
+  }
+  .horse-tab input:focus{outline:none;}
+  .horse-tab button.del{
+    border:none; background:transparent; cursor:pointer; color:inherit;
+    opacity:.6; font-size:.85rem; padding:2px 6px;
+  }
+  .horse-tab button.del:hover{opacity:1;}
+  .btn-add-horse{
+    border:1px dashed var(--dark);
+    background:transparent;
+    color:var(--dark);
+    border-radius:999px;
+    padding:5px 14px;
+    cursor:pointer;
+    font-size:.9rem;
+    font-weight:600;
+  }
+  .progress-wrap{
+    display:flex; align-items:center; gap:8px; font-size:.8rem; color:var(--ink-soft);
+    white-space:nowrap;
+  }
+  .progress-track{width:90px; height:6px; background:var(--soft); border-radius:4px; overflow:hidden;}
+  .progress-fill{height:100%; background:var(--dark); width:0%; transition:width .2s;}
+
+  /* SECTION NAV */
+  .nav-bar{
+    position:sticky; top:var(--horsebar-h, 53px); z-index:40;
+    background:var(--card);
+    border-bottom:1px solid var(--line);
+    padding:8px 16px;
+    overflow-x:auto;
+    white-space:nowrap;
+  }
+  .nav-bar a{
+    display:inline-block;
+    font-size:.78rem;
+    color:var(--ink-soft);
+    text-decoration:none;
+    padding:4px 10px;
+    border-radius:999px;
+  }
+  .nav-bar a:hover{background:var(--soft); color:var(--dark);}
+
+  /* ACTION BAR */
+  .action-bar{
+    max-width:900px; margin:22px auto 0; padding:0 20px;
+    display:flex; gap:10px; flex-wrap:wrap; justify-content:center;
+  }
+  .btn{
+    border-radius:999px; padding:10px 20px; font-size:.92rem; font-weight:600;
+    cursor:pointer; border:1px solid var(--dark); font-family:inherit;
+  }
+  .btn-primary{background:var(--dark); color:#fff;}
+  .btn-outline{background:transparent; color:var(--dark);}
+  .btn-outline:hover{background:var(--soft);}
+  .btn-primary:hover{background:var(--dark-hover);}
+  input[type=file]{display:none;}
+
+  /* FORM */
+  main{max-width:900px; margin:0 auto; padding:20px 20px 60px;}
+  .org-section{
+    background:var(--card);
+    border-radius:var(--radius);
+    margin:22px 0;
+    overflow:hidden;
+    border:1px solid var(--line);
+  }
+  .section-head{
+    background:var(--soft);
+    padding:14px 22px;
+  }
+  .section-head h2{
+    margin:0; font-size:1.25rem; color:var(--dark);
+  }
+  .section-body{padding:20px 22px 26px;}
+  .subhead{
+    font-size:1rem; color:var(--dark); margin:20px 0 10px;
+    border-bottom:1px solid var(--line); padding-bottom:6px;
+  }
+  .subhead:first-child{margin-top:0;}
+
+  .fields-grid{
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
+    gap:14px 18px;
+  }
+  .field{display:flex; flex-direction:column; gap:5px;}
+  .field-full{grid-column:1/-1;}
+  .field label{font-size:.82rem; font-weight:600; color:var(--ink);}
+  .field .hint{font-size:.72rem; color:var(--ink-soft); margin-top:-3px;}
+  .field input, .field select, .field textarea{
+    font-family:inherit; font-size:.92rem;
+    padding:8px 10px; border:1px solid var(--line); border-radius:8px;
+    background:var(--card); color:var(--ink);
+  }
+  .field input:focus, .field select:focus, .field textarea:focus{
+    outline:none; border-color:var(--dark);
+  }
+  .field textarea{resize:vertical; min-height:64px;}
+  .field input[readonly]{background:var(--soft); font-weight:700; border-color:transparent;}
+
+  .repeat-container{display:flex; flex-direction:column; gap:14px; margin-bottom:6px;}
+  .repeat-row{
+    border:1px solid var(--line); border-radius:10px; padding:14px 16px; background:var(--bg);
+  }
+  .repeat-row.hidden-row{display:none;}
+  .repeat-row .row-label{font-size:.78rem; text-transform:uppercase; letter-spacing:.5px; color:var(--ink-soft); margin-bottom:8px; display:block;}
+  .repeat-row .item-name{font-size:.98rem; font-weight:700; color:var(--dark); margin-bottom:10px; display:block;}
+  .fields-grid-2{grid-template-columns:1fr 1fr;}
+  @media (max-width:480px){ .fields-grid-2{grid-template-columns:1fr;} }
+
+  .check-row{
+    display:flex; align-items:center; gap:10px; padding:6px 0;
+  }
+  .check-row input[type=checkbox]{width:20px; height:20px; accent-color:var(--dark); flex-shrink:0;}
+  .check-row label{font-size:.92rem; flex:1; padding:4px 0;}
+  .check-row input.check-date{
+    font-family:inherit; font-size:.85rem; padding:6px 8px;
+    border:1px solid var(--line); border-radius:8px; background:var(--card); max-width:170px; flex:none;
+  }
+  .check-row input[type=text]{
+    flex:1; font-family:inherit; font-size:.92rem; padding:7px 10px;
+    border:1px solid var(--line); border-radius:8px; background:var(--bg);
+  }
+
+  .checkbox-group{display:flex; flex-wrap:wrap; gap:10px 18px; margin:8px 0 4px;}
+  .checkbox-group label{display:flex; align-items:center; gap:6px; font-size:.9rem; padding:3px 0;}
+  .checkbox-group input{accent-color:var(--dark); width:18px; height:18px; flex-shrink:0;}
+
+  .add-btn{
+    align-self:flex-start;
+    background:transparent; border:1px dashed var(--ink-soft); color:var(--ink-soft);
+    border-radius:8px; padding:8px 14px; font-size:.85rem; cursor:pointer; font-family:inherit;
+  }
+  .add-btn:hover{border-color:var(--dark); color:var(--dark);}
+
+  .finance-summary{
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+    gap:14px; margin-top:16px; padding-top:16px; border-top:1px dashed var(--line);
+  }
+
+  /* PHOTO UPLOAD */
+  .photo-upload{margin-bottom:24px;}
+  .field-label-standalone{font-size:.82rem; font-weight:600; color:var(--ink); display:block; margin-bottom:4px;}
+  .section-note{font-size:.8rem; color:var(--ink-soft); font-style:italic; margin:0 0 10px;}
+  .photo-preview{margin-bottom:10px;}
+  .photo-preview img{max-width:200px; max-height:200px; border-radius:12px; border:1px solid var(--line); display:block; object-fit:cover;}
+  .photo-preview .doc-empty{font-size:.85rem; color:var(--ink-soft); font-style:italic;}
+  .photo-remove{border:none; background:transparent; color:var(--ink-soft); cursor:pointer; font-size:.78rem; margin-top:6px; display:inline-block; text-decoration:underline;}
+  .photo-remove:hover{color:var(--dark);}
+  .doc-upload-btn{
+    display:inline-block; border:1px dashed var(--ink-soft); color:var(--ink-soft);
+    border-radius:8px; padding:8px 14px; font-size:.85rem; cursor:pointer;
+  }
+  .doc-upload-btn:hover{border-color:var(--dark); color:var(--dark);}
+
+  /* CTA / FOOTER */
+  .cta{
+    max-width:760px; margin:40px auto; padding:34px 30px;
+    background:var(--dark); color:var(--bg);
+    border-radius:18px; text-align:center;
+  }
+  .cta h3{margin:0 0 10px; font-size:1.4rem; color:#fff;}
+  .cta p{color:var(--soft); max-width:520px; margin:0 auto 20px; font-size:.98rem;}
+  .cta a.btn-cta{
+    display:inline-block; background:var(--soft); color:var(--dark); text-decoration:none;
+    padding:12px 28px; border-radius:999px; font-weight:700; font-size:.95rem;
+  }
+  .cta a.btn-cta:hover{background:var(--soft-strong);}
+
+  footer{
+    text-align:center; padding:26px 20px 50px; color:var(--ink-soft); font-size:.82rem;
+  }
+
+  .toast{
+    position:fixed; bottom:22px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--dark); color:#fff; padding:10px 22px; border-radius:999px;
+    font-size:.88rem; opacity:0; pointer-events:none; transition:all .25s; z-index:100;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  @media print{
+    .horse-bar, .nav-bar, .action-bar, .add-btn, .cta, footer{display:none !important;}
+    .doc-upload-btn, .photo-remove{display:none !important;}
+    .hero{background:#fff; padding:10px 0;}
+    .org-section{break-inside:avoid; border:none; margin:10px 0;}
+    body{background:#fff;}
+    .repeat-row.hidden-row{display:none !important;}
+  }
+  @media (max-width:600px){
+    .fields-grid{grid-template-columns:1fr;}
+  }
+
+  /* LOCK SCREEN */
+  .lock-screen{
+    position:fixed; inset:0; z-index:9999;
+    background:var(--bg);
+    display:flex; align-items:center; justify-content:center;
+    padding:24px;
+  }
+  .lock-box{
+    max-width:380px; width:100%;
+    background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+    padding:32px 28px; text-align:center;
+    box-shadow:0 10px 30px rgba(0,0,0,.06);
+  }
+  .lock-box h2{margin:0 0 8px; color:var(--dark); font-size:1.3rem;}
+  .lock-box p{margin:0 0 20px; color:var(--ink-soft); font-size:.92rem;}
+  .lock-box input[type=password]{
+    width:100%; font-family:inherit; font-size:1rem; text-align:center;
+    padding:11px 14px; border:1px solid var(--line); border-radius:8px;
+    background:var(--bg); color:var(--ink); margin-bottom:12px;
+  }
+  .lock-box input[type=password]:focus{outline:none; border-color:var(--dark);}
+  .lock-box button{
+    width:100%; border-radius:999px; padding:11px 20px; font-size:.95rem; font-weight:600;
+    cursor:pointer; border:1px solid var(--dark); font-family:inherit;
+    background:var(--dark); color:#fff;
+  }
+  .lock-box button:hover{background:var(--dark-hover);}
+  .lock-error{color:#b23b3b; font-size:.85rem; margin-top:12px; min-height:1.2em;}
+  @media print{ .lock-screen{display:none !important;} }
+</style>
+</head>
+<body>
+
+<div class="lock-screen" id="lockScreen">
+  <div class="lock-box">
+    <h2>Willkommen bei „Alles im Blick"</h2>
+    <p>Bitte gib das Passwort ein, das du nach deinem Kauf per E-Mail erhalten hast.</p>
+    <form id="lockForm">
+      <input type="password" id="lockInput" placeholder="Passwort" autocomplete="off">
+      <button type="submit">Freischalten</button>
+      <div class="lock-error" id="lockError"></div>
+    </form>
+  </div>
+</div>
+<script>
+  // Zugangsschutz: läuft sofort, damit bereits freigeschaltete Besucher:innen
+  // keinen kurzen Aufblitzer der Sperre sehen.
+  (function(){
+    var LOCK_PASSWORD = "ALLESIMBLICK2026"; // <- hier dein eigenes Passwort eintragen
+    var lockScreen = document.getElementById('lockScreen');
+    if(localStorage.getItem('aib_unlocked') === 'yes'){
+      lockScreen.remove();
+      return;
+    }
+    document.getElementById('lockForm').addEventListener('submit', function(e){
+      e.preventDefault();
+      var val = document.getElementById('lockInput').value.trim();
+      if(val.toLowerCase() === LOCK_PASSWORD.toLowerCase()){
+        try{ localStorage.setItem('aib_unlocked', 'yes'); }catch(err){}
+        lockScreen.remove();
+      } else {
+        document.getElementById('lockError').textContent = 'Das Passwort stimmt nicht ganz. Schau nochmal in deiner Bestätigungs-E-Mail nach.';
+      }
+    });
+  })();
+</script>
+
+<div class="hero">
+  <h1>Alles im Blick</h1>
+  <p>Dein Pferde-Organizer nach dem Ein-Ort-Prinzip.</p>
+</div>
+
+<div class="intro">
+  <p>Kein Zettel im Stallschrank, keine Notiz im Handy, kein „warte, ich schau kurz nach" beim Tierarztanruf mehr. Trag einmal ein, was du über dein Pferd weißt – und hast es ab sofort immer zur Hand, egal ob beim Tierarztanruf, auf dem Turnier oder im Notfall. <strong>Deine Daten bleiben bei dir:</strong> keine Anmeldung, keine Cloud, kein Abo. Dein Fortschritt wird automatisch in diesem Browser gespeichert, sodass nichts verloren geht – zusätzlich kannst du deinen Stand jederzeit als Datei sichern oder auf einem anderen Gerät weiterführen. Hast du mehrere Pferde? Oben kannst du für jedes ein eigenes Profil anlegen.</p>
+</div>
+
+<div class="horse-bar">
+  <div class="horse-tabs" id="horseTabs"></div>
+  <button class="btn-add-horse" id="addHorseBtn" type="button">+ Pferd</button>
+  <div class="progress-wrap">
+    <span id="progressLabel">0% ausgefüllt</span>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  </div>
+</div>
+
+<div class="nav-bar" id="navBar"></div>
+
+<div class="action-bar">
+  <button class="btn btn-primary" id="saveBtn" type="button">Als Datei sichern</button>
+  <button class="btn btn-outline" id="loadBtn" type="button">Datei laden</button>
+  <input type="file" id="fileInput" accept="application/json">
+  <button class="btn btn-outline" id="printBtn" type="button">Drucken / als PDF</button>
+</div>
+
+<main id="formRoot"></main>
+
+<div class="cta">
+  <h3>Was, wenn am Ende nicht drei Fotos reichen müssten?</h3>
+  <p>Die meisten Shootings enden mit einer Galerie zum Durchklicken und der Frage, welche Bilder es wert sind. Bei mir nicht. Ich halte fest, was zwischen euch beiden passiert – dieses Vertraute, dieses Leise, manchmal auch das ziemlich Wilde – vom Kuschelmoment bis zum vollen Galopp. Am Ende bekommst du nicht die Auswahl, sondern eure ganze Geschichte. Wenn du wissen willst, wie sich das für euch anfühlen würde, schreib mir einfach.</p>
+  <a class="btn-cta" href="mailto:info@melanie-kluge-foto.de?subject=Anfrage%20Pferdefotografie">Schreib mir</a>
+</div>
+
+<footer>
+  Melanie Kluge Fotografie – Pferde-, Hunde- und Portraitfotografie in Groß-Umstadt &amp; der Rhein-Main-Region · info@melanie-kluge-foto.de
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------- Datenmodell ---------- */
+const SECTIONS = [
+{num:1, title:'Stammdaten Pferd', blocks:[
+  {type:'photoupload', name:'pferdefoto', label:'Foto deines Pferds (optional)'},
+  {type:'fields', items:[
+    {label:'Name', type:'text'}, {label:'Rufname', type:'text'},
+    {label:'Geschlecht', type:'select', options:['Hengst','Stute','Wallach']},
+    {label:'Rasse', type:'text'}, {label:'Farbe', type:'text'},
+    {label:'Geburtsdatum', type:'date'}, {label:'Alter', type:'text'},
+    {label:'Stockmaß (cm)', type:'text'},
+    {label:'Gewicht – Datum', type:'date'}, {label:'Gewicht – Wert (kg)', type:'text'},
+    {label:'Besitzer', type:'text'}, {label:'Einsteller', type:'text'},
+    {label:'Mikrochipnummer', type:'text'}, {label:'Equidenpassnummer', type:'text'},
+    {label:'Lebensnummer', type:'text'}, {label:'Versicherungsnummer', type:'text'},
+    {label:'Stalladresse', type:'text'}
+  ]},
+  {type:'subheading', text:'Kontakte &amp; Ansprechpartner'},
+  {type:'fields', items:[
+    {label:'Tierarzt – Name', type:'text'}, {label:'Tierarzt – Adresse', type:'text'}, {label:'Tierarzt – Telefon', type:'text'},
+    {label:'Hufschmied – Name', type:'text'}, {label:'Hufschmied – Adresse', type:'text'}, {label:'Hufschmied – Telefon', type:'text'},
+    {label:'Zahnarzt – Name', type:'text'}, {label:'Zahnarzt – Adresse', type:'text'}, {label:'Zahnarzt – Telefon', type:'text'},
+    {label:'Physiotherapeut – Name', type:'text'}, {label:'Physiotherapeut – Adresse', type:'text'}, {label:'Physiotherapeut – Telefon', type:'text'},
+    {label:'Osteopath – Name', type:'text'}, {label:'Osteopath – Adresse', type:'text'}, {label:'Osteopath – Telefon', type:'text'},
+    {label:'Sattler – Name', type:'text'}, {label:'Sattler – Adresse', type:'text'}, {label:'Sattler – Telefon', type:'text'},
+    {label:'Trainer – Name', type:'text'}, {label:'Trainer – Adresse', type:'text'}, {label:'Trainer – Telefon', type:'text'},
+    {label:'Notfallkontakt – Name', type:'text'}, {label:'Notfallkontakt – Telefon', type:'text'}
+  ]}
+]},
+{num:2, title:'Maße', blocks:[
+  {type:'fields', items:[
+    {label:'Stockmaß', type:'text'}, {label:'Gewicht', type:'text'}, {label:'Halsumfang', type:'text'},
+    {label:'Brustumfang', type:'text'}, {label:'Rückenlänge', type:'text'}, {label:'Bauchumfang', type:'text'}, {label:'Beinumfang', type:'text'}
+  ]}
+]},
+{num:3, title:'Charakter', blocks:[
+  {type:'fields', items:[{label:'Lieblingsleckerlis', type:'text'}, {label:'Krankheiten', type:'text'}]},
+  {type:'textarea', label:'Ängste'}, {type:'textarea', label:'Besonderheiten'},
+  {type:'textarea', label:'Verladeverhalten'}, {type:'textarea', label:'Herdenverhalten'}, {type:'textarea', label:'Eigenheiten'}
+]},
+{num:4, title:'Gesundheitsakte', blocks:[
+  {type:'subheading', text:'Impfungen'},
+  {type:'cardrepeat', name:'impfung', label:'Impfeintrag', addText:'weiteren Impfeintrag', rowsVisible:2, rowsMax:8, fields:[
+    {label:'Datum', type:'date'}, {label:'Impfstoff', type:'text'},
+    {label:'Tierarzt', type:'text'}, {label:'Nächste Impfung fällig am', type:'date'}
+  ]},
+  {type:'subheading', text:'Wurmkur'},
+  {type:'cardrepeat', name:'wurmkur', label:'Wurmkur-Eintrag', addText:'weiteren Wurmkur-Eintrag', rowsVisible:2, rowsMax:8, fields:[
+    {label:'Datum', type:'date'}, {label:'Wirkstoff', type:'text'}
+  ]},
+  {type:'subheading', text:'Kotprobe'},
+  {type:'fields', items:[{label:'Datum', type:'date'}, {label:'Ergebnis', type:'text'}]},
+  {type:'subheading', text:'Zahnbehandlung &amp; weitere Gesundheitsdaten'},
+  {type:'fields', items:[
+    {label:'Letzter Termin', type:'date'}, {label:'Nächster Termin', type:'date'},
+    {label:'Röntgenbilder – Datum', type:'date'}, {label:'Röntgenbilder – Befund', type:'text'},
+    {label:'Blutbilder – Datum', type:'date'}, {label:'Blutbilder – Befund', type:'text'},
+    {label:'Medikamente', type:'text'}, {label:'Allergien', type:'text'},
+    {label:'Unverträglichkeiten', type:'text'}, {label:'Vorerkrankungen', type:'text'},
+    {label:'Operationen', type:'text'}, {label:'Verletzungen', type:'text'},
+    {label:'Lahmheiten', type:'text'}, {label:'Klinikaufenthalte', type:'text'},
+    {label:'Fieberprotokoll', type:'text'}, {label:'Atemwegserkrankungen', type:'text'},
+    {label:'Magengeschwüre', type:'text'}, {label:'EMS', type:'text'},
+    {label:'Cushing', type:'text'}, {label:'Hufrehe', type:'text'},
+    {label:'Koliken', type:'text'}, {label:'Husten', type:'text'}, {label:'Ekzem', type:'text'}
+  ]},
+  {type:'textarea', label:'Narben (Beschreibung / Stelle)'}
+]},
+{num:5, title:'Gewicht &amp; Entwicklung', blocks:[
+  {type:'cardrepeat', name:'gewicht', label:'Messung', addText:'weitere Messung', rowsVisible:3, rowsMax:8, fields:[
+    {label:'Datum', type:'date'}, {label:'Gewicht (kg)', type:'number'},
+    {label:'Brustumfang (cm)', type:'number'}, {label:'Body Condition Score', type:'text'}
+  ]},
+  {type:'fields', items:[{label:'Muskelzustand', type:'text'}, {label:'Fotos Vorher/Nachher', type:'text'}]},
+  {type:'textarea', label:'Wachstum Jungpferd (Verlauf)'},
+  {type:'textarea', label:'Diätverlauf'}
+]},
+{num:6, title:'Hufe', blocks:[
+  {type:'subheading', text:'Hufschmied'},
+  {type:'fields', items:[
+    {label:'Barhuf oder Beschlag', type:'select', options:['Barhuf','Beschlag','Gemischt']},
+    {label:'Eisen vorne', type:'text'}, {label:'Eisen hinten', type:'text'},
+    {label:'Letzter Beschlag/Hufbearbeitung', type:'date'}, {label:'Nächster Termin', type:'date'}
+  ]},
+  {type:'subheading', text:'Hufschuhe'},
+  {type:'fields', items:[
+    {label:'Marke', type:'text'}, {label:'Größe vorne', type:'text'}, {label:'Größe hinten', type:'text'}
+  ]},
+  {type:'textarea', label:'Besonderheiten'}
+]},
+{num:7, title:'Medikamente', blocks:[
+  {type:'cardrepeat', name:'medikament', label:'Medikament', addText:'weiteres Medikament', rowsVisible:2, rowsMax:8, fields:[
+    {label:'Medikament', type:'text'}, {label:'Dosierung', type:'text'}, {label:'Beginn', type:'date'},
+    {label:'Ende', type:'date'}, {label:'Karenzzeit', type:'text'}
+  ]}
+]},
+{num:8, title:'Notfall', blocks:[
+  {type:'fields', items:[
+    {label:'Tierarzt – Name', type:'text'}, {label:'Tierarzt – Adresse', type:'text'}, {label:'Tierarzt – Telefon', type:'text'},
+    {label:'Klinik – Name', type:'text'}, {label:'Klinik – Adresse', type:'text'}, {label:'Klinik – Telefon', type:'text'},
+    {label:'Anhänger verfügbar', type:'text'},
+    {label:'Blutgruppe (falls bekannt)', type:'text'}, {label:'Allergien', type:'text'}
+  ]},
+  {type:'textarea', label:'Medikamente im Stall'}, {type:'textarea', label:'Notfallplan'}
+]},
+{num:9, title:'Futter', blocks:[
+  {type:'subheading', text:'Futtermittel'},
+  {type:'itemrows', name:'futtermittel', items:[
+    {label:'Heu', fields:[{label:'Sorte/Art', type:'text'}, {label:'Menge', type:'text'}]},
+    {label:'Kraftfutter', fields:[{label:'Sorte/Art', type:'text'}, {label:'Menge', type:'text'}]},
+    {label:'Mineralfutter', fields:[{label:'Sorte/Art', type:'text'}, {label:'Menge', type:'text'}]},
+    {label:'Mash', fields:[{label:'Sorte/Art', type:'text'}, {label:'Menge', type:'text'}]},
+    {label:'Öl', fields:[{label:'Sorte/Art', type:'text'}, {label:'Menge', type:'text'}]},
+    {label:'Ergänzungsfutter', fields:[{label:'Sorte/Art', type:'text'}, {label:'Menge', type:'text'}]},
+    {label:'Sonstiges', fields:[{label:'Sorte/Art', type:'text'}, {label:'Menge', type:'text'}]}
+  ]},
+  {type:'subheading', text:'Organisation'},
+  {type:'fields', items:[
+    {label:'Medikamente', type:'text'}, {label:'Fütterungszeiten', type:'text'}, {label:'Weidezeit', type:'text'}
+  ]},
+  {type:'textarea', label:'Änderungen (Datum / Was)'}
+]},
+{num:10, title:'Weide', blocks:[
+  {type:'fields', items:[
+    {label:'Anweiden begonnen am', type:'date'}, {label:'Stunden auf der Weide', type:'text'},
+    {label:'Koppelwechsel', type:'text'}, {label:'Düngung', type:'text'},
+    {label:'Nachsaat', type:'text'}, {label:'Giftpflanzen entdeckt', type:'text'}
+  ]},
+  {type:'textarea', label:'Eigene Ergänzungen'}
+]},
+{num:11, title:'Stall', blocks:[
+  {type:'fields', items:[
+    {label:'Boxnummer', type:'text'}, {label:'Einstreu', type:'text'}, {label:'Heuqualität', type:'text'},
+    {label:'Stallmiete', type:'text'}, {label:'Spindnummer', type:'text'}
+  ]},
+  {type:'textarea', label:'Schrankinhalt'}
+]},
+{num:12, title:'Training', blocks:[
+  {type:'textarea', label:'Trainingsplan'},
+  {type:'fields', items:[{label:'Ruhetage', type:'text'}]},
+  {type:'subheading', text:'Disziplinen (ausfüllen was zutrifft)'},
+  {type:'checkboxgroup', name:'disziplinen', options:['Ausritt','Dressur','Springen','Bodenarbeit','Longieren','Freiarbeit','Trail','Ranch Riding','Working Equitation','Cavaletti','Spaziergang','Schwimmen']},
+  {type:'textrows', name:'weitere_disziplinen', rowsVisible:1, rowsMax:6, placeholder:'Eigene Disziplin eingeben', addLabel:'Disziplin'},
+  {type:'textarea', label:'Belastungsprotokoll'}
+]},
+{num:13, title:'Ausrüstung', blocks:[
+  {type:'subheading', text:'Halfter'},
+  {type:'cardrepeat', name:'halfter', label:'Halfter', addText:'weiteres Halfter', rowsVisible:1, rowsMax:4, fields:[
+    {label:'Marke', type:'text'}, {label:'Größe', type:'text'}, {label:'Farbe', type:'text'}
+  ]},
+  {type:'subheading', text:'Trense'},
+  {type:'cardrepeat', name:'trense', label:'Trense', addText:'weitere Trense', rowsVisible:1, rowsMax:4, fields:[
+    {label:'Größe', type:'text'}, {label:'Hersteller', type:'text'}, {label:'Modell', type:'text'}
+  ]},
+  {type:'subheading', text:'Gebiss'},
+  {type:'cardrepeat', name:'gebiss', label:'Gebiss', addText:'weiteres Gebiss', rowsVisible:1, rowsMax:4, fields:[
+    {label:'Art', type:'text'}, {label:'Stärke', type:'text'}, {label:'Material', type:'text'}, {label:'Größe', type:'text'}
+  ]},
+  {type:'subheading', text:'Westernsattel'},
+  {type:'cardrepeat', name:'westernsattel', label:'Westernsattel', addText:'weiteren Westernsattel', rowsVisible:1, rowsMax:3, fields:[
+    {label:'Marke', type:'text'},
+    {label:'Sitzgröße', type:'text', hint:'z. B. 15", 16"'},
+    {label:'Baum', type:'text', hint:'z. B. Semi Quarter, Full Quarter Horse Bars, Araberbaum'},
+    {label:'Kammerweite/Gullet', type:'text', hint:'z. B. 6,5" oder 7"'},
+    {label:'Skirt-/Sattellänge', type:'text', hint:'Gesamtlänge auf dem Pferderücken'},
+    {label:'Fenderlänge', type:'text', hint:'wichtig für die Beinlänge'},
+    {label:'Gewicht', type:'text'},
+    {label:'Gurtung/Rigging', type:'text', hint:'z. B. In-Skirt oder 7/8'},
+    {label:'Seriennummer', type:'text'}, {label:'Kaufdatum', type:'date'}, {label:'Letzter Sattlertermin', type:'date'}
+  ]},
+  {type:'subheading', text:'Englischer Sattel'},
+  {type:'cardrepeat', name:'englischersattel', label:'Englischer Sattel', addText:'weiteren Englischen Sattel', rowsVisible:1, rowsMax:3, fields:[
+    {label:'Marke', type:'text'},
+    {label:'Sitzgröße', type:'text', hint:'z. B. 17", 17,5"'},
+    {label:'Kammerweite/Baumweite', type:'text', hint:'z. B. 30, 32, MW oder Wide'},
+    {label:'Sattelart', type:'text', hint:'Dressur, Springen oder Vielseitigkeit'},
+    {label:'Auflage-/Gesamtlänge', type:'text'},
+    {label:'Sattelblattlänge', type:'text'},
+    {label:'Kissenfüllung', type:'text', hint:'Wolle oder Schaum'},
+    {label:'Kopfeisen', type:'text', hint:'fest oder wechselbar'},
+    {label:'Seriennummer', type:'text'}, {label:'Kaufdatum', type:'date'}, {label:'Letzter Sattlertermin', type:'date'}
+  ]},
+  {type:'subheading', text:'Gurt, Steigbügel &amp; Zubehör'},
+  {type:'itemrows', name:'gurt_steigbuegel', items:[
+    {label:'Gurt', fields:[{label:'Marke', type:'text'}, {label:'Größe', type:'text'}]},
+    {label:'Steigbügel', fields:[{label:'Marke', type:'text'}, {label:'Größe', type:'text'}]},
+    {label:'Steigbügelriemen', fields:[{label:'Marke', type:'text'}, {label:'Länge', type:'text'}]},
+    {label:'Schabracken', fields:[{label:'Marke', type:'text'}, {label:'Anzahl', type:'number'}]},
+    {label:'Pad', fields:[{label:'Marke', type:'text'}, {label:'Größe', type:'text'}]}
+  ]},
+  {type:'subheading', text:'Decken'},
+  {type:'cardrepeat', name:'decke', label:'Decke', addText:'weitere Decke', rowsVisible:2, rowsMax:8, fields:[
+    {label:'Art', type:'select', options:['Regendecke','Abschwitzdecke','Fliegendecke','Winterdecke','Ekzemdecke','Sonstige']},
+    {label:'Marke', type:'text'}, {label:'Modell', type:'text'}, {label:'Größe', type:'text'},
+    {label:'Grammfüllung', type:'text'}, {label:'Aktuell passend', type:'select', options:['Ja','Nein']}
+  ]},
+  {type:'subheading', text:'Gamaschen, Hufglocken &amp; Fliegenmaske'},
+  {type:'cardrepeat', name:'zubehoer', label:'Zubehör', addText:'weiteres Zubehör', rowsVisible:2, rowsMax:8, fields:[
+    {label:'Art', type:'select', options:['Gamaschen vorne','Gamaschen hinten','Hufglocken','Fliegenmaske']},
+    {label:'Marke', type:'text'}, {label:'Größe', type:'text'}
+  ]}
+]},
+{num:14, title:'Wartung Ausrüstung', blocks:[
+  {type:'checklist', name:'wartung', withDate:true, items:['Sattel gefettet','Trense gereinigt','Decken gewaschen','Gebiss gereinigt','Lederpflege']},
+  {type:'textarea', label:'Reparaturen'}
+]},
+{num:15, title:'Termine', blocks:[
+  {type:'fields', items:[
+    {label:'Hufschmied', type:'date'}, {label:'Tierarzt', type:'date'},
+    {label:'Osteopath', type:'date'}, {label:'Physiotherapie', type:'date'},
+    {label:'Zahnarzt', type:'date'}, {label:'Sattler', type:'date'},
+    {label:'Trainer', type:'date'}, {label:'Turnier', type:'date'},
+    {label:'Lehrgang', type:'date'}, {label:'Impfungen', type:'date'},
+    {label:'Entwurmen', type:'date'}, {label:'Kotprobe', type:'date'},
+    {label:'Deckwechsel Winter/Sommer', type:'text'}, {label:'Scheren', type:'date'},
+    {label:'Weidesaison', type:'text'}, {label:'Stallarbeit', type:'text'}
+  ]}
+]},
+{num:16, title:'Erinnerungen', blocks:[
+  {type:'editablelist', name:'erinnerung', rowsVisible:6, rowsMax:14, placeholders:[
+    'In 14 Tagen neue Wurmkur','Impfung läuft in 30 Tagen ab','Hufschmied in 2 Wochen',
+    'Winterdecke waschen','Fliegenmaske kaufen','Mineralfutter geht zur Neige'
+  ]}
+]},
+{num:17, title:'Turniere', blocks:[
+  {type:'cardrepeat', name:'turnier', label:'Turnier', addText:'weiteres Turnier', rowsVisible:2, rowsMax:6, fields:[
+    {label:'Datum', type:'date'}, {label:'Ausschreibung', type:'text'}, {label:'Nennung', type:'text'},
+    {label:'Startnummer', type:'text'}, {label:'Disziplin', type:'text'}, {label:'Ergebnis', type:'text'},
+    {label:'Richterbewertung', type:'text'}, {label:'Fotos', type:'text'}, {label:'Videos', type:'text'}, {label:'Kosten (€)', type:'text'}
+  ]}
+]},
+{num:18, title:'Checklisten', blocks:[
+  {type:'subheading', text:'Turnier packen'},
+  {type:'editablelist', name:'check_turnier', rowsVisible:5, rowsMax:12, placeholders:['Sattel, Trense, Gebiss','Putzzeug, Verpflegung, Erste-Hilfe-Set']},
+  {type:'subheading', text:'Ausritt'},
+  {type:'editablelist', name:'check_ausritt', rowsVisible:4, rowsMax:10, placeholders:['Halfter & Strick als Reserve, Handy, Hufkratzer']},
+  {type:'subheading', text:'Urlaub'},
+  {type:'editablelist', name:'check_urlaub', rowsVisible:4, rowsMax:10, placeholders:['Vertretung informieren, Futterplan aushängen']},
+  {type:'subheading', text:'Stallwechsel'},
+  {type:'editablelist', name:'check_stallwechsel', rowsVisible:4, rowsMax:10, placeholders:['Kündigung alter Stall, neue Box vorbereiten']},
+  {type:'subheading', text:'Klinikaufenthalt'},
+  {type:'editablelist', name:'check_klinik', rowsVisible:4, rowsMax:10, placeholders:['Unterlagen, Decke, Kontaktdaten Klinik']},
+  {type:'subheading', text:'Winter'},
+  {type:'editablelist', name:'check_winter', rowsVisible:4, rowsMax:10, placeholders:['Winterdecke, Hufeisen mit Stollen, Fellpflege']},
+  {type:'subheading', text:'Sommer'},
+  {type:'editablelist', name:'check_sommer', rowsVisible:4, rowsMax:10, placeholders:['Fliegenschutz, ausreichend Wasser, Schattenplatz']}
+]},
+{num:19, title:'Versicherungen', blocks:[
+  {type:'fields', items:[
+    {label:'OP-Versicherung – Vertragsnummer', type:'text'}, {label:'OP-Versicherung – Ansprechpartner', type:'text'}, {label:'OP-Versicherung – Telefon', type:'text'},
+    {label:'Krankenversicherung – Vertragsnummer', type:'text'}, {label:'Krankenversicherung – Ansprechpartner', type:'text'}, {label:'Krankenversicherung – Telefon', type:'text'},
+    {label:'Haftpflicht – Vertragsnummer', type:'text'}, {label:'Haftpflicht – Ansprechpartner', type:'text'}, {label:'Haftpflicht – Telefon', type:'text'},
+    {label:'Ablaufdatum', type:'date'}
+  ]}
+]},
+{num:20, title:'Finanzen', blocks:[
+  {type:'fields', items:[
+    {label:'Stallmiete (mtl.)', type:'number', finance:true}, {label:'Tierarztkosten', type:'number', finance:true},
+    {label:'Schmied', type:'number', finance:true}, {label:'Futter', type:'number', finance:true},
+    {label:'Versicherung', type:'number', finance:true}, {label:'Turniere', type:'number', finance:true},
+    {label:'Trainer', type:'number', finance:true}, {label:'Ausrüstung', type:'number', finance:true}
+  ]},
+  {type:'financeSummary'},
+  {type:'textarea', label:'Notizen zur Jahresübersicht'}
+]},
+{num:21, title:'Einkaufslisten', blocks:[
+  {type:'textarea', label:'Was fehlt?'}, {type:'textarea', label:'Was muss ersetzt werden?'}, {type:'textarea', label:'Wunschliste'}
+]}
+];
+
+/* ---------- Hilfsfunktionen ---------- */
+function slug(s){
+  return String(s).toLowerCase()
+    .replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss')
+    .replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'');
+}
+let uidCounter = 0;
+function uid(){ return 'f' + (uidCounter++); }
+
+function fieldHtml(f, key){
+  const id = key;
+  const hintHtml = f.hint ? `<span class="hint">${f.hint}</span>` : '';
+  if(f.type === 'select'){
+    const opts = f.options.map(o=>`<option value="${o}">${o}</option>`).join('');
+    return `<div class="field"><label for="${id}">${f.label}</label>${hintHtml}
+      <select id="${id}" data-field="${id}"><option value=""></option>${opts}</select></div>`;
+  }
+  const financeAttr = f.finance ? ' data-finance="cost"' : '';
+  return `<div class="field"><label for="${id}">${f.label}</label>${hintHtml}
+    <input type="${f.type}" id="${id}" data-field="${id}"${financeAttr}></div>`;
+}
+
+function renderSection(section, sIdx){
+  let html = `<section class="org-section" id="sec-${sIdx}">
+    <div class="section-head"><h2>${section.num}. ${section.title}</h2></div>
+    <div class="section-body">`;
+  let sub = '';
+  section.blocks.forEach((block, bIdx)=>{
+    if(block.type === 'subheading'){
+      sub = slug(block.text);
+      html += `<h3 class="subhead">${block.text}</h3>`;
+    } else if(block.type === 'fields'){
+      html += `<div class="fields-grid">`;
+      block.items.forEach(f=>{
+        const key = `s${sIdx}__${sub}__${slug(f.label)}`;
+        html += fieldHtml(f, key);
+      });
+      html += `</div>`;
+    } else if(block.type === 'textarea'){
+      const key = `s${sIdx}__${sub}__${slug(block.label)}`;
+      html += `<div class="fields-grid"><div class="field field-full">
+        <label for="${key}">${block.label}</label>
+        <textarea id="${key}" data-field="${key}" rows="3"></textarea></div></div>`;
+    } else if(block.type === 'cardrepeat'){
+      const groupKey = `s${sIdx}__${sub}__${block.name}`;
+      html += `<div class="repeat-container" data-visible="${block.rowsVisible}" id="grp_${groupKey}">`;
+      for(let r=0; r<block.rowsMax; r++){
+        const hidden = r >= block.rowsVisible ? ' hidden-row' : '';
+        html += `<div class="repeat-row${hidden}"><span class="row-label">${block.label} ${r+1}</span><div class="fields-grid">`;
+        block.fields.forEach(f=>{
+          const key = `${groupKey}__row${r}__${slug(f.label)}`;
+          html += fieldHtml(f, key);
+        });
+        html += `</div></div>`;
+      }
+      { const addPhrase = block.addText || `weitere ${block.label}`;
+      html += `</div><button type="button" class="add-btn" data-reveal="grp_${groupKey}">+ ${addPhrase} hinzufügen</button>`; }
+    } else if(block.type === 'checklist'){
+      const groupKey = `s${sIdx}__${sub}__${block.name}`;
+      html += `<div class="repeat-container" data-visible="${block.items.length}">`;
+      block.items.forEach((label,i)=>{
+        const key = `${groupKey}__item${i}`;
+        const dateHtml = block.withDate ? `<input type="date" class="check-date" id="${key}_date" data-field="${key}_date">` : '';
+        html += `<div class="check-row"><input type="checkbox" id="${key}" data-field="${key}"><label for="${key}">${label}</label>${dateHtml}</div>`;
+      });
+      html += `</div>`;
+      const noteKey = `${groupKey}__notiz`;
+      html += `<div class="fields-grid"><div class="field field-full"><label for="${noteKey}">Notizen</label>
+        <textarea id="${noteKey}" data-field="${noteKey}" rows="2"></textarea></div></div>`;
+    } else if(block.type === 'editablelist'){
+      const groupKey = `s${sIdx}__${sub}__${block.name}`;
+      html += `<div class="repeat-container" data-visible="${block.rowsVisible}" id="grp_${groupKey}">`;
+      for(let r=0; r<block.rowsMax; r++){
+        const hidden = r >= block.rowsVisible ? ' hidden-row' : '';
+        const ck = `${groupKey}__row${r}__checked`;
+        const tx = `${groupKey}__row${r}__text`;
+        const ph = block.placeholders && block.placeholders[r] ? block.placeholders[r] : 'Eigener Punkt';
+        html += `<div class="repeat-row${hidden}"><div class="check-row">
+          <input type="checkbox" id="${ck}" data-field="${ck}">
+          <input type="text" id="${tx}" data-field="${tx}" placeholder="${ph}"></div></div>`;
+      }
+      html += `</div><button type="button" class="add-btn" data-reveal="grp_${groupKey}">+ Punkt hinzufügen</button>`;
+    } else if(block.type === 'checkboxgroup'){
+      const groupKey = `s${sIdx}__${sub}__${block.name}`;
+      html += `<div class="checkbox-group">`;
+      block.options.forEach(o=>{
+        const key = `${groupKey}__${slug(o)}`;
+        html += `<label><input type="checkbox" id="${key}" data-field="${key}">${o}</label>`;
+      });
+      html += `</div>`;
+    } else if(block.type === 'itemrows'){
+      const groupKey = `s${sIdx}__${sub}__${block.name}`;
+      html += `<div class="repeat-container" data-visible="${block.items.length}">`;
+      block.items.forEach((item,i)=>{
+        html += `<div class="repeat-row"><span class="item-name">${item.label}</span><div class="fields-grid fields-grid-2">`;
+        item.fields.forEach(f=>{
+          const key = `${groupKey}__item${i}__${slug(f.label)}`;
+          html += fieldHtml(f, key);
+        });
+        html += `</div></div>`;
+      });
+      html += `</div>`;
+    } else if(block.type === 'textrows'){
+      const groupKey = `s${sIdx}__${sub}__${block.name}`;
+      html += `<div class="repeat-container" data-visible="${block.rowsVisible}" id="grp_${groupKey}">`;
+      for(let r=0; r<block.rowsMax; r++){
+        const hidden = r >= block.rowsVisible ? ' hidden-row' : '';
+        const key = `${groupKey}__row${r}`;
+        const ph = block.placeholder || '';
+        html += `<div class="repeat-row${hidden}"><div class="field field-full"><input type="text" id="${key}" data-field="${key}" placeholder="${ph}"></div></div>`;
+      }
+      html += `</div><button type="button" class="add-btn" data-reveal="grp_${groupKey}">+ weitere${block.addLabel ? ' ' + block.addLabel : ''} hinzufügen</button>`;
+    } else if(block.type === 'financeSummary'){
+      html += `<div class="finance-summary">
+        <div class="field"><label>Monatliche Gesamtausgaben</label><input type="text" readonly data-finance="monthlyTotal"></div>
+        <div class="field"><label>Hochgerechnet aufs Jahr</label><input type="text" readonly data-finance="yearlyTotal"></div>
+      </div>`;
+    } else if(block.type === 'photoupload'){
+      const key = `s${sIdx}__${sub}__${block.name}`;
+      const inputId = `${key}__fileinput`;
+      html += `<div class="photo-upload" data-photo="${key}">
+        <span class="field-label-standalone">${block.label}</span>
+        <p class="section-note">Bleibt bei dir: Das Foto wird nirgendwo hochgeladen, sondern nur lokal in deiner gespeicherten Datei mit abgelegt.</p>
+        <div class="photo-preview" data-photo-preview="${key}"><span class="doc-empty">Kein Foto ausgewählt</span></div>
+        <label class="doc-upload-btn" for="${inputId}">Foto auswählen</label>
+        <input type="file" id="${inputId}" class="photo-file-input" data-photo-target="${key}" accept="image/*" style="display:none">
+        <input type="hidden" data-field="${key}__data" value="">
+        <input type="hidden" data-field="${key}__name" value="">
+      </div>`;
+    }
+  });
+  html += `</div></section>`;
+  return html;
+}
+
+/* ---------- Aufbau ---------- */
+const formRoot = document.getElementById('formRoot');
+const navBar = document.getElementById('navBar');
+let sectionsHtml = '';
+let navHtml = '';
+SECTIONS.forEach((s,i)=>{
+  sectionsHtml += renderSection(s,i);
+  navHtml += `<a href="#sec-${i}">${s.num}. ${s.title}</a>`;
+});
+formRoot.innerHTML = sectionsHtml;
+navBar.innerHTML = navHtml;
+
+const allFieldEls = () => formRoot.querySelectorAll('[data-field]');
+
+/* ---------- Pferde-Profile ---------- */
+let horses = [{name:'Mein Pferd', values:{}}];
+let currentHorseIndex = 0;
+
+function collectFormValues(){
+  const obj = {};
+  allFieldEls().forEach(el=>{
+    obj[el.dataset.field] = el.type === 'checkbox' ? el.checked : el.value;
+  });
+  return obj;
+}
+
+function syncGroupVisibility(container){
+  const visible = parseInt(container.dataset.visible || '0', 10);
+  const rows = Array.from(container.querySelectorAll('.repeat-row'));
+  let lastWithData = -1;
+  rows.forEach((row,i)=>{
+    const hasData = Array.from(row.querySelectorAll('[data-field]')).some(el=>{
+      return el.type === 'checkbox' ? el.checked : el.value.trim() !== '';
+    });
+    if(hasData) lastWithData = i;
+  });
+  const showUntil = Math.max(visible - 1, lastWithData);
+  rows.forEach((row,i)=>{
+    row.classList.toggle('hidden-row', i > showUntil);
+  });
+}
+function syncAllGroupsVisibility(){
+  formRoot.querySelectorAll('.repeat-container[data-visible]').forEach(syncGroupVisibility);
+}
+
+function updateFinanceComputed(){
+  let sum = 0;
+  formRoot.querySelectorAll('[data-finance="cost"]').forEach(el=>{
+    const v = parseFloat(el.value);
+    if(!isNaN(v)) sum += v;
+  });
+  const m = formRoot.querySelector('[data-finance="monthlyTotal"]');
+  const y = formRoot.querySelector('[data-finance="yearlyTotal"]');
+  if(m) m.value = sum ? sum.toFixed(2) + ' €' : '';
+  if(y) y.value = sum ? (sum*12).toFixed(2) + ' €' : '';
+}
+
+function updateProgress(){
+  const els = Array.from(allFieldEls()).filter(el=>!el.hasAttribute('readonly') && el.type !== 'hidden');
+  let filled = 0;
+  els.forEach(el=>{
+    if(el.type === 'checkbox'){ if(el.checked) filled++; }
+    else if(el.value && el.value.trim() !== '') filled++;
+  });
+  const pct = els.length ? Math.round((filled/els.length)*100) : 0;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = pct + '% ausgefüllt';
+}
+
+function applyFormValues(values){
+  allFieldEls().forEach(el=>{
+    const v = values && values.hasOwnProperty(el.dataset.field) ? values[el.dataset.field] : (el.type === 'checkbox' ? false : '');
+    if(el.type === 'checkbox'){ el.checked = !!v; } else { el.value = v; }
+  });
+  syncAllGroupsVisibility();
+  updateFinanceComputed();
+  renderAllPhotoPreviews();
+  updateProgress();
+}
+
+/* ---------- Fotos (lokal, kein Upload zu einem Server) ---------- */
+function readFileAsDataURL(file){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onload = ()=> resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderPhotoPreview(key){
+  const dataEl = formRoot.querySelector(`[data-field="${key}__data"]`);
+  const nameEl = formRoot.querySelector(`[data-field="${key}__name"]`);
+  const previewEl = formRoot.querySelector(`[data-photo-preview="${key}"]`);
+  if(!dataEl || !previewEl) return;
+  if(dataEl.value){
+    previewEl.innerHTML = `<img src="${dataEl.value}" alt="${nameEl ? nameEl.value : 'Pferdefoto'}">
+      <button type="button" class="photo-remove" data-photo-remove="${key}">Foto entfernen</button>`;
+  } else {
+    previewEl.innerHTML = `<span class="doc-empty">Kein Foto ausgewählt</span>`;
+  }
+}
+function renderAllPhotoPreviews(){
+  formRoot.querySelectorAll('[data-photo-preview]').forEach(el=>{
+    renderPhotoPreview(el.dataset.photoPreview);
+  });
+}
+async function handlePhotoFileInput(input){
+  const key = input.dataset.photoTarget;
+  const file = input.files && input.files[0];
+  if(!file) return;
+  if(file.size > 6*1024*1024){
+    showToast('Foto ist größer als 6 MB – bitte ein kleineres Foto wählen');
+    input.value = '';
+    return;
+  }
+  const dataUrl = await readFileAsDataURL(file);
+  const dataEl = formRoot.querySelector(`[data-field="${key}__data"]`);
+  const nameEl = formRoot.querySelector(`[data-field="${key}__name"]`);
+  if(dataEl){ dataEl.value = dataUrl; dataEl.dispatchEvent(new Event('input', {bubbles:true})); }
+  if(nameEl){ nameEl.value = file.name; }
+  renderPhotoPreview(key);
+  input.value = '';
+}
+function removePhoto(key){
+  const dataEl = formRoot.querySelector(`[data-field="${key}__data"]`);
+  const nameEl = formRoot.querySelector(`[data-field="${key}__name"]`);
+  if(dataEl){ dataEl.value = ''; dataEl.dispatchEvent(new Event('input', {bubbles:true})); }
+  if(nameEl){ nameEl.value = ''; }
+  renderPhotoPreview(key);
+}
+
+function renderHorseTabs(){
+  const wrap = document.getElementById('horseTabs');
+  wrap.innerHTML = '';
+  horses.forEach((h,i)=>{
+    const tab = document.createElement('div');
+    tab.className = 'horse-tab' + (i === currentHorseIndex ? ' active' : '');
+    const input = document.createElement('input');
+    input.value = h.name;
+    input.addEventListener('input', ()=>{ h.name = input.value; saveAutosave(); });
+    input.addEventListener('click', e=>{ if(i !== currentHorseIndex){ switchHorse(i); } });
+    tab.appendChild(input);
+    if(horses.length > 1){
+      const del = document.createElement('button');
+      del.className = 'del';
+      del.type = 'button';
+      del.textContent = '✕';
+      del.title = 'Pferd entfernen';
+      let confirmState = false;
+      del.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        if(!confirmState){
+          confirmState = true;
+          del.textContent = 'sicher?';
+          setTimeout(()=>{ confirmState = false; del.textContent = '✕'; }, 2500);
+        } else {
+          removeHorse(i);
+        }
+      });
+      tab.appendChild(del);
+    }
+    tab.addEventListener('click', ()=>{ if(i !== currentHorseIndex) switchHorse(i); });
+    wrap.appendChild(tab);
+  });
+}
+
+function switchHorse(i){
+  horses[currentHorseIndex].values = collectFormValues();
+  currentHorseIndex = i;
+  applyFormValues(horses[i].values);
+  renderHorseTabs();
+  saveAutosave(true);
+}
+function addHorse(){
+  horses[currentHorseIndex].values = collectFormValues();
+  horses.push({name:`Pferd ${horses.length+1}`, values:{}});
+  currentHorseIndex = horses.length - 1;
+  applyFormValues({});
+  renderHorseTabs();
+  showToast('Neues Pferdeprofil angelegt');
+  saveAutosave(true);
+}
+function removeHorse(i){
+  if(horses.length <= 1) return;
+  horses.splice(i,1);
+  if(currentHorseIndex >= horses.length) currentHorseIndex = horses.length - 1;
+  applyFormValues(horses[currentHorseIndex].values);
+  renderHorseTabs();
+  saveAutosave(true);
+}
+
+/* ---------- Automatisches Speichern im Browser (lokal, keine Cloud) ---------- */
+const AUTOSAVE_KEY = 'aib_autosave';
+let autosaveTimer;
+function saveAutosave(immediate){
+  clearTimeout(autosaveTimer);
+  const run = ()=>{
+    horses[currentHorseIndex].values = collectFormValues();
+    try{
+      localStorage.setItem(AUTOSAVE_KEY, JSON.stringify({currentHorseIndex, horses, savedAt:new Date().toISOString()}));
+    } catch(err){ /* z.B. Speicher voll oder privater Modus – dann läuft die App einfach ohne Autosave weiter */ }
+  };
+  if(immediate){ run(); } else { autosaveTimer = setTimeout(run, 500); }
+}
+function loadAutosave(){
+  try{
+    const raw = localStorage.getItem(AUTOSAVE_KEY);
+    if(!raw) return false;
+    const payload = JSON.parse(raw);
+    if(!payload.horses || !Array.isArray(payload.horses) || !payload.horses.length) return false;
+    horses = payload.horses;
+    currentHorseIndex = Math.min(payload.currentHorseIndex || 0, horses.length - 1);
+    return true;
+  } catch(err){ return false; }
+}
+
+/* ---------- Events ---------- */
+formRoot.addEventListener('input', (e)=>{
+  if(e.target.matches('[data-finance="cost"]')) updateFinanceComputed();
+  updateProgress();
+  saveAutosave();
+});
+formRoot.addEventListener('change', (e)=>{
+  if(e.target.classList.contains('add-btn')) return;
+  if(e.target.matches('.photo-file-input')){ handlePhotoFileInput(e.target); }
+});
+formRoot.addEventListener('click', (e)=>{
+  if(e.target.matches('.add-btn')){
+    const container = document.getElementById(e.target.dataset.reveal);
+    const hiddenRow = container.querySelector('.repeat-row.hidden-row');
+    if(hiddenRow) hiddenRow.classList.remove('hidden-row');
+  }
+  if(e.target.matches('[data-photo-remove]')){
+    removePhoto(e.target.dataset.photoRemove);
+  }
+});
+
+document.getElementById('addHorseBtn').addEventListener('click', addHorse);
+
+let toastTimer;
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 2400);
+}
+
+document.getElementById('saveBtn').addEventListener('click', ()=>{
+  horses[currentHorseIndex].values = collectFormValues();
+  const payload = {app:'Pferde-Organizer', version:1, exportedAt:new Date().toISOString(), currentHorseIndex, horses};
+  const blob = new Blob([JSON.stringify(payload,null,2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const dateStr = new Date().toISOString().slice(0,10);
+  a.href = url; a.download = `pferde-organizer-${dateStr}.json`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Stand gespeichert – Datei liegt in deinen Downloads');
+});
+
+document.getElementById('loadBtn').addEventListener('click', ()=>{
+  document.getElementById('fileInput').click();
+});
+document.getElementById('fileInput').addEventListener('change', (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev)=>{
+    try{
+      const payload = JSON.parse(ev.target.result);
+      if(!payload.horses || !Array.isArray(payload.horses)) throw new Error('ungültiges Format');
+      horses = payload.horses;
+      currentHorseIndex = Math.min(payload.currentHorseIndex || 0, horses.length - 1);
+      applyFormValues(horses[currentHorseIndex].values || {});
+      renderHorseTabs();
+      saveAutosave(true);
+      showToast('Stand geladen');
+    } catch(err){
+      showToast('Datei konnte nicht gelesen werden');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+document.getElementById('printBtn').addEventListener('click', ()=>{
+  horses[currentHorseIndex].values = collectFormValues();
+  window.print();
+});
+
+/* ---------- Sticky-Bar-Höhe (Mobile: horse-bar kann zweizeilig werden) ---------- */
+function syncHorseBarHeight(){
+  const bar = document.querySelector('.horse-bar');
+  if(bar){ document.documentElement.style.setProperty('--horsebar-h', bar.offsetHeight + 'px'); }
+}
+if(window.ResizeObserver){
+  new ResizeObserver(syncHorseBarHeight).observe(document.querySelector('.horse-bar'));
+} else {
+  window.addEventListener('resize', syncHorseBarHeight);
+}
+
+/* ---------- Init ---------- */
+const hadAutosave = loadAutosave();
+renderHorseTabs();
+syncHorseBarHeight();
+applyFormValues(horses[currentHorseIndex].values || {});
+if(hadAutosave){ showToast('Dein letzter Stand wurde automatisch geladen'); }
+</script>
+</body>
+</html>
