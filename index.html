@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
 <title>Alles im Blick – dein Pferde-Organizer | Melanie Kluge Fotografie</title>
 <style>
   /* Palette: #dfebdd (soft sage), #f7f7f5 (off-white), #4e5b53 (dark sage), #3a3a3a (ink) */
@@ -282,74 +283,9 @@
   @media (max-width:600px){
     .fields-grid{grid-template-columns:1fr;}
   }
-
-  /* LOCK SCREEN */
-  .lock-screen{
-    position:fixed; inset:0; z-index:9999;
-    background:var(--bg);
-    display:flex; align-items:center; justify-content:center;
-    padding:24px;
-  }
-  .lock-box{
-    max-width:380px; width:100%;
-    background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
-    padding:32px 28px; text-align:center;
-    box-shadow:0 10px 30px rgba(0,0,0,.06);
-  }
-  .lock-box h2{margin:0 0 8px; color:var(--dark); font-size:1.3rem;}
-  .lock-box p{margin:0 0 20px; color:var(--ink-soft); font-size:.92rem;}
-  .lock-box input[type=password]{
-    width:100%; font-family:inherit; font-size:1rem; text-align:center;
-    padding:11px 14px; border:1px solid var(--line); border-radius:8px;
-    background:var(--bg); color:var(--ink); margin-bottom:12px;
-  }
-  .lock-box input[type=password]:focus{outline:none; border-color:var(--dark);}
-  .lock-box button{
-    width:100%; border-radius:999px; padding:11px 20px; font-size:.95rem; font-weight:600;
-    cursor:pointer; border:1px solid var(--dark); font-family:inherit;
-    background:var(--dark); color:#fff;
-  }
-  .lock-box button:hover{background:var(--dark-hover);}
-  .lock-error{color:#b23b3b; font-size:.85rem; margin-top:12px; min-height:1.2em;}
-  @media print{ .lock-screen{display:none !important;} }
 </style>
 </head>
 <body>
-
-<div class="lock-screen" id="lockScreen">
-  <div class="lock-box">
-    <h2>Willkommen bei „Alles im Blick"</h2>
-    <p>Bitte gib das Passwort ein, das du nach deinem Kauf per E-Mail erhalten hast.</p>
-    <form id="lockForm">
-      <input type="password" id="lockInput" placeholder="Passwort" autocomplete="off">
-      <button type="submit">Freischalten</button>
-      <div class="lock-error" id="lockError"></div>
-    </form>
-  </div>
-</div>
-<script>
-  // Zugangsschutz: läuft sofort, damit bereits freigeschaltete Besucher:innen
-  // keinen kurzen Aufblitzer der Sperre sehen.
-  (function(){
-    var LOCK_PASSWORD = "ALLESIMBLICK2026"; // <- hier dein eigenes Passwort eintragen
-    var lockScreen = document.getElementById('lockScreen');
-    if(localStorage.getItem('aib_unlocked') === 'yes'){
-      lockScreen.remove();
-      return;
-    }
-    document.getElementById('lockForm').addEventListener('submit', function(e){
-      e.preventDefault();
-      var val = document.getElementById('lockInput').value.trim();
-      if(val.toLowerCase() === LOCK_PASSWORD.toLowerCase()){
-        try{ localStorage.setItem('aib_unlocked', 'yes'); }catch(err){}
-        lockScreen.remove();
-      } else {
-        document.getElementById('lockError').textContent = 'Das Passwort stimmt nicht ganz. Schau nochmal in deiner Bestätigungs-E-Mail nach.';
-      }
-    });
-  })();
-</script>
-
 <div class="hero">
   <h1>Alles im Blick</h1>
   <p>Dein Pferde-Organizer nach dem Ein-Ort-Prinzip.</p>
